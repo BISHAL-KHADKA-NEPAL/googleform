@@ -6,7 +6,7 @@ import numpy as np
 
 # Base Form Submission URL
 BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdmLmtT3qjkuyBC2TPn0-nRdFCXHbbF64nVB3fCkdGgeaaVbQ/formResponse"
-TOTAL_RESPONSES = 50
+TOTAL_RESPONSES = 2
 
 # --- TYPO & INFORMAL TEXT ENGINE ---
 
