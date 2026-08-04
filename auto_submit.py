@@ -65,9 +65,7 @@ def generate_unique_correlated_suggestion(sec_d_scores, biz_type):
     Dynamically constructs a 100% unique suggestion that directly 
     correlates with the respondent's highest rated challenge in Section 4.
     """
-    # Identify the highest-rated challenge in Section 4
     highest_challenge = max(sec_d_scores, key=lambda k: int(sec_d_scores[k]))
-    
     openers = ["Please", "Pls", "Need to", "Government and banks should", "Kindly", "Requesting to", "Must", "Good if they"]
 
     if highest_challenge == "entry.302692740":  # High Transaction Fees
@@ -119,14 +117,24 @@ def sample_likert(mean, std_dev=0.8, introduce_item_noise=False):
         val = np.random.normal(mean, std_dev)
     return str(int(np.clip(round(val), 1, 5)))
 
-# --- SUBMISSION LOOP ---
+# --- SUBMISSION LOOP (2 RESPONSES PER HOURLY RUN) ---
 
 used_suggestions = set()
-backup_file = open("50_submitted_urls.txt", "w", encoding="utf-8")
 
-print(f"Starting automatic submission of {TOTAL_RESPONSES} responses...\n")
+print(f"Starting execution for {TOTAL_RESPONSES} scheduled responses...\n")
 
 for i in range(1, TOTAL_RESPONSES + 1):
+    # Random Pre-Submission Waiting Delays for Random Timestamps:
+    # Response #1 waits a random 1 to 15 minutes
+    # Response #2 waits another random 10 to 30 minutes
+    if i == 1:
+        wait_seconds = random.uniform(60, 900)   # 1 to 15 minutes
+    else:
+        wait_seconds = random.uniform(600, 1800) # 10 to 30 minutes
+
+    print(f"[{i}/{TOTAL_RESPONSES}] Waiting {round(wait_seconds / 60, 1)} minutes before submitting at a random minute...")
+    time.sleep(wait_seconds)
+
     # Select Archetype
     archetype = random.choices(
         ["Standard_TechSavvy", "Standard_Traditional", "Standard_Moderate", 
@@ -220,28 +228,14 @@ for i in range(1, TOTAL_RESPONSES + 1):
         "submit": "Submit"
     }
 
-    # Save backup URL to text file
-    url_params = []
-    for k, v in payload.items():
-        if isinstance(v, list):
-            for item in v:
-                url_params.append((k, item))
-        else:
-            url_params.append((k, v))
-    backup_file.write(f"{BASE_URL}?{urllib.parse.urlencode(url_params)}\n")
-
     # Send Live HTTP POST Request
     try:
         res = requests.post(BASE_URL, data=payload, timeout=10)
         if res.status_code == 200:
-            print(f"[{i}/{TOTAL_RESPONSES}] Success ({archetype}) -> Free text: \"{suggestion}\"")
+            print(f"[{i}/{TOTAL_RESPONSES}] Submitted ({archetype}) -> Suggestion: \"{suggestion}\"")
         else:
             print(f"[{i}/{TOTAL_RESPONSES}] Failed with HTTP Status Code: {res.status_code}")
     except Exception as e:
         print(f"[{i}/{TOTAL_RESPONSES}] Network Error: {e}")
 
-    # Random pacing delay (2.5 to 5.0 seconds) to prevent hitting Google rate limits
-    time.sleep(random.uniform(2.5, 5.0))
-
-backup_file.close()
-print("\nCompleted! All 50 responses submitted successfully & URLs logged to '50_submitted_urls.txt'.")
+print("\nHourly run finished! 2 responses submitted at random minutes.")
