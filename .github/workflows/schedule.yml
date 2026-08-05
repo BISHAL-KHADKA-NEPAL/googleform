@@ -1,10 +1,10 @@
-name: Hourly Random Form Submission
+name: Nightly Form Submission
 
 on:
   schedule:
-    # Runs every hour at minute 0
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    # 15 19 UTC = 1:00 AM Nepal Time (NPT)
+    - cron: '15 19 * * *'
+  workflow_dispatch: # Allows manual run button
 
 jobs:
   run-script:
